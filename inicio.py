@@ -59,7 +59,7 @@ class InicioView(ft.View):
             selected_index=0
         )
         
-        self.controls_list = [ # Renombré 'controls' a 'controls_list' para evitar conflicto con la propiedad de View
+        self.controls_list = [
             ft.Column(
                 [
                     ft.Text("Esta es la página de Inicio.", size=20),
@@ -70,14 +70,13 @@ class InicioView(ft.View):
             )
         ]
         
-        # Las propiedades route, appbar y navigation_bar se asignan directamente al View
-        # No es necesario asignarlas aquí si se pasan directamente en el build()
-        # self.route = "/inicio"
-        # self.appbar = self.appbar
-        # self.navigation_bar = self.navigation_bar
-
 
     def update_appbar_buttons(self):
+        # Defensa extra: Asegurarse de que page.session exista antes de intentar usarlo
+        if not hasattr(self.page, 'session') or self.page.session is None:
+            print("DEBUG: self.page.session no está disponible (InicioView.update_appbar_buttons). Retornando.")
+            return
+
         user_id = self.page.session.get("user_id")
         current_route = self.page.route
 
@@ -101,16 +100,17 @@ class InicioView(ft.View):
             self.register_button_appbar.visible = True
             print("DEBUG: Botones de AppBar: Usuario NO logueado (Login, Registro visibles).")
         
-        # Asegúrate de que el appbar de la página actual se actualice
-        # Esto solo tiene sentido si esta instancia de AppBar es la que está en la página.
-        # Si tienes AppBars diferentes para cada View, cada View se encargaría de la suya.
-        # Para la AppBar global de la página, esto es correcto si se asigna globalmente.
         if self.page.appbar is not None and self.page.appbar == self.appbar:
             self.page.appbar.update()
 
         self.update_navigation_bar_items()
 
     def update_navigation_bar_items(self):
+        # Defensa extra: Asegurarse de que page.session exista antes de intentar usarlo
+        if not hasattr(self.page, 'session') or self.page.session is None:
+            print("DEBUG: self.page.session no está disponible (InicioView.update_navigation_bar_items). Retornando.")
+            return
+
         user_id = self.page.session.get("user_id")
         
         self.navigation_bar.destinations.clear()
@@ -158,10 +158,7 @@ class InicioView(ft.View):
         self.page.snack_bar = ft.SnackBar(ft.Text("Has cerrado sesión."), open=True)
         print("DEBUG: Sesión cerrada, user_id removido.")
         
-        self.page.go("/login")
-        # No es necesario llamar update_appbar_buttons aquí, route_change en app.py lo hará.
-        # self.update_appbar_buttons() # Esta llamada es redundante si page.go lo gatilla
-        # self.page.update() # Se llama en route_change
+        self.page.go("/login") # Esto gatillará route_change y actualizará la UI
 
 
     def go_to_login(self, e):
@@ -174,10 +171,9 @@ class InicioView(ft.View):
         self.page.go("/perfil")
 
     def build(self):
-        # CORREGIDO: Pasar appbar como argumento nombrado y controls_list como argumento posicional
         return ft.View(
             self.route,
-            self.controls_list, # Controles del cuerpo de la vista (lista)
-            appbar=self.appbar, # AppBar como argumento nombrado
+            self.controls_list,
+            appbar=self.appbar,
             navigation_bar=self.navigation_bar
         )

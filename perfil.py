@@ -1,4 +1,6 @@
 # perfil.py
+# NUNCA MODIFICAR ft.Colors | ft.Icons
+
 import flet as ft
 from db import get_user_by_id, update_user_profile
 

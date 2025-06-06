@@ -41,22 +41,21 @@ def create_user(username, password, nombre_registrado, apellido1, apellido2,
               telefono_whatsapp, otro_telefono, correo_electronico,
               avatar_url, pais, provincia, busco))
         conn.commit()
+        conn.close()
+        print(f"DEBUG: Usuario {username} creado exitosamente.")
         return True
     except sqlite3.IntegrityError:
-        print("Error: Username or email already exists.")
-        return False
-    finally:
+        print(f"DEBUG: Error al crear usuario {username}: ya existe un usuario con ese username o correo.")
         conn.close()
+        return False
 
 def get_user_by_username_or_phone(identifier):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users WHERE username = ? OR telefono_whatsapp = ? OR correo_electronico = ?',
-                   (identifier, identifier, identifier))
+    cursor.execute('SELECT * FROM users WHERE username = ? OR telefono_whatsapp = ?', (identifier, identifier))
     user_data = cursor.fetchone()
     conn.close()
     if user_data:
-        # Convertir a diccionario para fácil acceso por nombre de columna
         columns = [description[0] for description in cursor.description]
         return dict(zip(columns, user_data))
     return None
@@ -70,16 +69,15 @@ def get_user_by_id(user_id):
     if user_data:
         columns = [description[0] for description in cursor.description]
         user_dict = dict(zip(columns, user_data))
-        print(f"DEBUG: Datos de usuario obtenidos de DB para ID {user_id}: {user_dict['username']}") # DEBUG PRINT
+        print(f"DEBUG: Datos de usuario obtenidos de DB para ID {user_id}: {user_dict['username']}")
         return user_dict
-    print(f"DEBUG: No se encontraron datos de usuario para ID {user_id}") # DEBUG PRINT
+    print(f"DEBUG: No se encontraron datos de usuario para ID {user_id}")
     return None
 
 def update_user_profile(user_id, **kwargs):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     
-    # Construir la parte SET de la consulta SQL dinámicamente
     set_clauses = []
     values = []
     for key, value in kwargs.items():
@@ -88,7 +86,7 @@ def update_user_profile(user_id, **kwargs):
     
     if not set_clauses:
         conn.close()
-        return False # No hay nada que actualizar
+        return False
 
     sql = f"UPDATE users SET {', '.join(set_clauses)} WHERE id = ?"
     values.append(user_id)
@@ -96,10 +94,38 @@ def update_user_profile(user_id, **kwargs):
     try:
         cursor.execute(sql, tuple(values))
         conn.commit()
-        print(f"DEBUG: Perfil de usuario {user_id} actualizado exitosamente.") # DEBUG PRINT
+        conn.close()
+        print(f"DEBUG: Perfil del usuario {user_id} actualizado exitosamente.")
         return True
     except Exception as e:
-        print(f"DEBUG: Error al actualizar perfil de usuario {user_id}: {e}") # DEBUG PRINT
-        return False
-    finally:
+        print(f"DEBUG: Error al actualizar perfil del usuario {user_id}: {e}")
         conn.close()
+        return False
+
+# --- NUEVAS FUNCIONES PARA RECUPERACIÓN DE CONTRASEÑA ---
+def get_user_by_username_or_email(identifier):
+    """Busca un usuario por su nombre de usuario o correo electrónico."""
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM users WHERE username = ? OR correo_electronico = ?', (identifier, identifier))
+    user_data = cursor.fetchone()
+    conn.close()
+    if user_data:
+        columns = [description[0] for description in cursor.description]
+        return dict(zip(columns, user_data))
+    return None
+
+def update_user_password(user_id, new_password):
+    """Actualiza la contraseña de un usuario."""
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute('UPDATE users SET password = ? WHERE id = ?', (new_password, user_id))
+        conn.commit()
+        conn.close()
+        print(f"DEBUG: Contraseña del usuario {user_id} actualizada exitosamente.")
+        return True
+    except Exception as e:
+        print(f"DEBUG: Error al actualizar contraseña del usuario {user_id}: {e}")
+        conn.close()
+        return False

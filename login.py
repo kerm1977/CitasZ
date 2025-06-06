@@ -1,4 +1,6 @@
 import flet as ft
+# NUNCA MODIFICAR ft.Colors | ft.Icons
+
 from db import get_user_by_username_or_phone
 
 class LoginView(ft.View):
