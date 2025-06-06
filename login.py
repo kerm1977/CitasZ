@@ -1,4 +1,3 @@
-# login.py
 import flet as ft
 from db import get_user_by_username_or_phone
 
@@ -56,9 +55,22 @@ class LoginView(ft.View):
         if user and user["password"] == password:
             self.message_text.value = "¡Inicio de sesión exitoso!"
             self.message_text.color = ft.Colors.GREEN_500
-            # --- CAMBIO IMPORTANTE AQUÍ ---
-            self.page.session.set("user_id", int(user["id"])) # Asegura que user_id sea un entero
-            # -----------------------------
+            
+            user_id_int = int(user["id"])
+            self.page.session.set("user_id", user_id_int)
+            print(f"DEBUG: user_id {user_id_int} guardado en session.")
+
+            # --- NUEVO: Lógica para "Recordarme" con client_storage ---
+            if self.remember_me_checkbox.value:
+                self.page.client_storage.set("user_id", user_id_int)
+                print(f"DEBUG: user_id {user_id_int} guardado en client_storage (Recordarme).")
+            else:
+                # Si no marca "Recordarme", asegúrate de que no haya un user_id persistente anterior
+                if self.page.client_storage.contains_key("user_id"):
+                    self.page.client_storage.remove("user_id")
+                    print("DEBUG: user_id removido de client_storage (No recordar).")
+            # ----------------------------------------------------------
+            
             self.page.go("/inicio")
         else:
             self.message_text.value = "Usuario o contraseña incorrectos."
@@ -69,7 +81,6 @@ class LoginView(ft.View):
         self.page.go("/registro")
 
     def recover_password(self, e):
-        # Implementar lógica de recuperación de contraseña
         self.message_text.value = "Funcionalidad de recuperación de contraseña no implementada."
         self.message_text.color = ft.Colors.BLUE_500
         self.page.update()
