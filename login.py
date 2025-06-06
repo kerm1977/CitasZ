@@ -1,3 +1,4 @@
+# login.py
 import flet as ft
 from db import get_user_by_username_or_phone
 
@@ -6,7 +7,7 @@ class LoginView(ft.View):
         super().__init__()
         self.page = page
         self.route = "/login"
-        self.appbar = ft.AppBar(title=ft.Text("Iniciar Sesión"), bgcolor="#FF00FF") # ¡De vuelta al color fucsia hexadecimal!
+        self.appbar = ft.AppBar(title=ft.Text("Iniciar Sesión"), bgcolor="#FF00FF")
 
         self.username_field = ft.TextField(label="Usuario o Teléfono", hint_text="Ingresa tu usuario o teléfono", width=300)
         self.password_field = ft.TextField(
@@ -28,8 +29,8 @@ class LoginView(ft.View):
                     self.password_field,
                     self.remember_me_checkbox,
                     ft.ElevatedButton("Iniciar Sesión", on_click=self.login_user),
-                    ft.TextButton("¿No tienes cuenta? Regístrate aquí", on_click=self.go_to_registro),
-                    ft.TextButton("¿Olvidaste tu contraseña? Recupérala", on_click=self.recover_password),
+                    ft.TextButton("¿No tienes cuenta? Regístrate", on_click=self.go_to_registro),
+                    ft.TextButton("¿Olvidaste tu contraseña?", on_click=self.recover_password),
                     self.message_text,
                 ],
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -55,7 +56,9 @@ class LoginView(ft.View):
         if user and user["password"] == password:
             self.message_text.value = "¡Inicio de sesión exitoso!"
             self.message_text.color = ft.Colors.GREEN_500
-            self.page.session.set("user_id", user["id"])
+            # --- CAMBIO IMPORTANTE AQUÍ ---
+            self.page.session.set("user_id", int(user["id"])) # Asegura que user_id sea un entero
+            # -----------------------------
             self.page.go("/inicio")
         else:
             self.message_text.value = "Usuario o contraseña incorrectos."
@@ -66,6 +69,7 @@ class LoginView(ft.View):
         self.page.go("/registro")
 
     def recover_password(self, e):
+        # Implementar lógica de recuperación de contraseña
         self.message_text.value = "Funcionalidad de recuperación de contraseña no implementada."
         self.message_text.color = ft.Colors.BLUE_500
         self.page.update()

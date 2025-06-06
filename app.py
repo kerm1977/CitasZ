@@ -1,3 +1,4 @@
+# app.py
 import flet as ft
 from inicio import InicioView
 from login import LoginView
@@ -8,62 +9,56 @@ from db import init_db
 def main(page: ft.Page):
     page.title = "App Flet con DB"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER # Mantener para el contenido de las vistas
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+
+    # --- CAMBIO IMPORTANTE AQUÍ (aunque ya estaba en tu código anterior) ---
+    # Asegúrate de que page.session esté disponible antes de que se use en las vistas
+    # Flet lo inicializa automáticamente, pero es bueno saber que existe.
+    # No necesitas añadir nada aquí explícitamente para page.session
+    # ---------------------------------------------------------------------
 
     init_db()
 
-    # Define la NavigationBar una vez aquí, si quieres que sea global en todas las vistas
-    # O déjala dentro de InicioView y manéjala con page.navigation_bar en did_mount/will_unmount
-    # Para este ejemplo, la dejo en InicioView y uso page.navigation_bar allí.
+    login_view_instance = LoginView(page)
+    registro_view_instance = RegistroView(page)
+    inicio_view_instance = InicioView(page)
 
     def route_change(route):
+        print(f"DEBUG: Navegando a la ruta: {page.route}")
         page.views.clear()
         
-        # Crear la vista de inicio
-        inicio_view = InicioView(page)
-        page.views.append(inicio_view)
+        page.views.append(inicio_view_instance)
+        page.navigation_bar = inicio_view_instance.navigation_bar
 
-        # Configurar la NavigationBar para la página
-        # La NavigationBar se gestiona en la vista de inicio, pero se asigna a page.navigation_bar
-        # para que Flet la posicione correctamente.
         if page.route == "/login":
-            page.views.append(LoginView(page))
-            # Deseleccionar el destino de usuario en la nav bar si estamos en login
-            if inicio_view.navigation_bar.selected_index != -1: # No está en inicio
-                inicio_view.navigation_bar.selected_index = None # Deseleccionar todo si no es inicio/perfil
+            page.views.append(login_view_instance)
+            inicio_view_instance.navigation_bar.selected_index = None
         elif page.route == "/registro":
-            page.views.append(RegistroView(page))
-            if inicio_view.navigation_bar.selected_index != -1:
-                inicio_view.navigation_bar.selected_index = None
+            page.views.append(registro_view_instance)
+            inicio_view_instance.navigation_bar.selected_index = None
         elif page.route == "/perfil":
-            if not page.session.get("user_id"):
+            user_id_in_session = page.session.get("user_id")
+            print(f"DEBUG: Intentando acceder a /perfil. user_id en sesión: {user_id_in_session}")
+            if user_id_in_session is None: # Si no hay user_id, redirigir
+                print("DEBUG: No hay user_id en sesión, redirigiendo a /login.")
                 page.go("/login")
                 return
-            page.views.append(PerfilView(page))
-            # Seleccionar el destino de usuario en la nav bar si estamos en perfil
-            # Esto puede ser un poco más complicado si no hay un destino directo de "perfil"
-            # Si el botón de "Usuario" lleva a login/registro/perfil, podemos mantenerlo seleccionado.
-            inicio_view.navigation_bar.selected_index = 1 # Asume que el botón de usuario/perfil está en el índice 1
-
-        # Asegurarse de que el page.navigation_bar esté configurado
-        # Cada vista es responsable de su propio NavigationBar si no es global
-        # En este caso, InicioView lo gestiona.
-        page.navigation_bar = inicio_view.navigation_bar # Asegura que la nav bar de inicio siempre esté presente
-
-        # Actualiza el estado del AppBar de la vista de inicio (si aplica)
-        inicio_view.update_appbar_buttons()
-
+            else:
+                perfil_view_instance = PerfilView(page) # Nueva instancia para asegurar did_mount
+                page.views.append(perfil_view_instance)
+                inicio_view_instance.navigation_bar.selected_index = 1 
+        
+        inicio_view_instance.update_appbar_buttons() 
         page.update()
 
     def view_pop(view):
+        print(f"DEBUG: Popping view: {view.route}")
         page.views.pop()
         top_view = page.views[-1]
         page.go(top_view.route)
         
-        # Asegúrate de que al volver, el appbar de inicio se actualice si es necesario
         if isinstance(top_view, InicioView):
             top_view.update_appbar_buttons()
-
 
     page.on_route_change = route_change
     page.on_view_pop = view_pop
