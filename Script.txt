@@ -1,0 +1,37 @@
+Crear una aplicación en flet que se conecte a una base de datos llamada db.db
+
+Todo lo relacionado al la base de datos modelos y tablas dentro de un archivo llamado db.py
+
+
+Crear una vista llamada inicio.py que es donde llega al ejecutar la aplicación. Esta va a tener una appbar pegado en el borde inferior de la app. Dentro del appbar  un  icono de usuario que al presiobarlo va a ir a la vista llamada login.py
+
+1. Vista  llamada login.py
+	Esta Permite loguearse con usuario o Teléfono
+	campo de password que permite ver la contraseña
+	una casilla de recordarme
+	una enlace que redirija a registro 
+	un enlace que diga recuperar contraseña
+
+2. Vista llamada registro.py
+	Esta permite registrar un usuario con
+	Usuario
+	Nombre Registrado
+	Apellidos 1
+	Apellidos 2
+	Teléfono whatsapp
+	Otro Teléfono
+	Correo Electrónico
+	Imagen de avatar
+	
+	Selector de País (Costa Rica, Nicaragua, Panamá)
+	
+	Selector de Provincia (Alajuela, Cartago, Heredia, Puntarenas, Guanacaste, Limón, San José, ------, Panamá,Colón, Darién, Bocas del Toro, Veraguas, Herrera, Los Santos, Coclé, Chiriquí, y Panamá Oeste, ------, Boaco, Carazo, Chinandega, Chontales, Estelí, Granada, Jinotega, León, Madriz, Managua, Masaya, Matagalpa, Nueva Segovia, Rivas y Río San Juan)
+	
+	Multiselector Multiple llamado Busco (Amiga con Derecho, Amiga Bisexual, Amiga Lesbiana, Curiosa, Novia, Chat Erótico, Video llamada, Masajista, Acompañante,  Aventurera, Solo una Amiga, otra)
+
+
+al registrarse tiene que ir a la vista login.py
+al loguarse tiene que ir a la vista inicio.py
+al estar logueado tiene que aparecer un ícono en forma de engranaje que vaya a perfil.py
+dentro de perfil tiene que aparecer arriba de primero la imagen de avatar seguido del resto de información.
+
